@@ -1,0 +1,77 @@
+@import 'react-toastify/dist/ReactToastify.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-white text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-md font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02];
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-md font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02];
+  }
+  
+  .btn-accent {
+    @apply bg-accent hover:bg-emerald-600 text-white px-6 py-3 rounded-md font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02];
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-card hover:shadow-card-hover transition-all duration-200;
+  }
+  
+  .form-input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+  }
+  
+  .gradient-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-sm bg-white/80 border border-white/20;
+  }
+}
+
+/* Toast Customization */
+.Toastify__toast-container {
+  @apply z-[9999] fixed;
+  top: 1rem;
+  right: 1rem;
+  width: auto;
+  max-width: 400px;
+}
+
+.Toastify__toast {
+  @apply rounded-lg shadow-lg min-h-[60px] font-medium;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
+
+.Toastify__progress-bar {
+  @apply bg-white/30;
+}
