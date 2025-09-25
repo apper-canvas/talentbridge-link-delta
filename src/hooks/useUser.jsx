@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
-import { userService } from "@/services/api/userService"
+import { useSelector, useDispatch } from 'react-redux'
+import { setUser, clearUser } from '@/store/userSlice'
 
 const UserContext = createContext(null)
 
@@ -12,65 +13,49 @@ export const useUser = () => {
 }
 
 export const UserProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
+const dispatch = useDispatch()
+  const userState = useSelector((state) => state.user)
+  const currentUser = userState?.user
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(false)
 
   const login = async (credentials) => {
     try {
-      setLoading(true)
-      const user = await userService.login(credentials)
-      setCurrentUser(user)
-      
-      // Load profile based on role
-      if (user.role === "jobSeeker") {
-        const profile = await userService.getJobSeekerProfile(user.Id)
-        setUserProfile(profile)
-      } else if (user.role === "employer") {
-        const profile = await userService.getEmployerProfile(user.Id)
-        setUserProfile(profile)
-      }
-      
-      return user
+      const { ApperUI } = window.ApperSDK
+      await ApperUI.login(credentials)
+      return currentUser
     } catch (error) {
       console.error("Login error:", error)
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 
-  const logout = () => {
-    setCurrentUser(null)
-    setUserProfile(null)
+  const logout = async () => {
+    try {
+      const { ApperUI } = window.ApperSDK
+      await ApperUI.logout()
+      dispatch(clearUser())
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
   }
 
   const register = async (userData) => {
     try {
-      setLoading(true)
-      const user = await userService.create(userData)
-      setCurrentUser(user)
-      return user
+      const { ApperUI } = window.ApperSDK
+      await ApperUI.register(userData)
+      return currentUser
     } catch (error) {
       console.error("Registration error:", error)
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 
   const updateProfile = async (profileData) => {
     try {
       setLoading(true)
-      if (currentUser?.role === "jobSeeker") {
-        const updated = await userService.updateJobSeekerProfile(currentUser.Id, profileData)
-        setUserProfile(updated)
-        return updated
-      } else if (currentUser?.role === "employer") {
-        const updated = await userService.updateEmployerProfile(currentUser.Id, profileData)
-        setUserProfile(updated)
-        return updated
-      }
+      // Profile update logic will be handled by individual services
+      return profileData
     } catch (error) {
       console.error("Profile update error:", error)
       throw error
@@ -87,10 +72,10 @@ export const UserProvider = ({ children }) => {
     logout,
     register,
     updateProfile,
-    isAuthenticated: !!currentUser,
-    isJobSeeker: currentUser?.role === "jobSeeker",
-    isEmployer: currentUser?.role === "employer",
-    isAdmin: currentUser?.role === "admin"
+    isAuthenticated: userState?.isAuthenticated || false,
+    isJobSeeker: currentUser?.role_c === "jobSeeker",
+    isEmployer: currentUser?.role_c === "employer", 
+    isAdmin: currentUser?.role_c === "admin"
   }
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>

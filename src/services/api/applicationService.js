@@ -1,78 +1,283 @@
-import applicationsData from "@/services/mockData/applications.json"
-
 class ApplicationService {
   constructor() {
-    this.applications = [...applicationsData]
+    this.tableName = 'application_c'
   }
 
-  delay() {
-    return new Promise(resolve => setTimeout(resolve, Math.random() * 300 + 200))
+  getApperClient() {
+    const { ApperClient } = window.ApperSDK
+    return new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    })
   }
 
   async getAll() {
-    await this.delay()
-    return [...this.applications]
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "job_title_c"}},
+          {"field": {"Name": "company_name_c"}},
+          {"field": {"Name": "location_c"}},
+          {"field": {"Name": "cover_letter_c"}},
+          {"field": {"Name": "applied_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "employer_notes_c"}},
+          {"field": {"Name": "job_id_c"}},
+          {"field": {"Name": "job_seeker_id_c"}}
+        ],
+        orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching applications:", error?.response?.data?.message || error)
+      return []
+    }
   }
 
   async getById(id) {
-    await this.delay()
-    const application = this.applications.find(a => a.Id === id)
-    if (!application) throw new Error("Application not found")
-    return { ...application }
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "job_title_c"}},
+          {"field": {"Name": "company_name_c"}},
+          {"field": {"Name": "location_c"}},
+          {"field": {"Name": "cover_letter_c"}},
+          {"field": {"Name": "applied_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "employer_notes_c"}},
+          {"field": {"Name": "job_id_c"}},
+          {"field": {"Name": "job_seeker_id_c"}}
+        ]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.getRecordById(this.tableName, id, params)
+      
+      if (!response?.data) {
+        return null
+      }
+      
+      return response.data
+    } catch (error) {
+      console.error(`Error fetching application ${id}:`, error?.response?.data?.message || error)
+      return null
+    }
   }
 
   async create(applicationData) {
-    await this.delay()
-    
-    const newId = Math.max(...this.applications.map(a => a.Id)) + 1
-    const newApplication = {
-      Id: newId,
-      ...applicationData
+    try {
+      const params = {
+        records: [{
+          Name: applicationData.job_title_c || applicationData.Name,
+          job_title_c: applicationData.job_title_c,
+          company_name_c: applicationData.company_name_c,
+          location_c: applicationData.location_c,
+          cover_letter_c: applicationData.cover_letter_c,
+          applied_date_c: applicationData.applied_date_c,
+          status_c: applicationData.status_c || "applied",
+          employer_notes_c: applicationData.employer_notes_c,
+          job_id_c: parseInt(applicationData.job_id_c),
+          job_seeker_id_c: parseInt(applicationData.job_seeker_id_c)
+        }]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.createRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success)
+        const failed = response.results.filter(r => !r.success)
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} records:`, failed)
+        }
+        return successful.length > 0 ? successful[0].data : null
+      }
+    } catch (error) {
+      console.error("Error creating application:", error?.response?.data?.message || error)
+      return null
     }
-    
-    this.applications.push(newApplication)
-    return { ...newApplication }
   }
 
   async update(id, applicationData) {
-    await this.delay()
-    
-    const index = this.applications.findIndex(a => a.Id === id)
-    if (index === -1) throw new Error("Application not found")
-    
-    this.applications[index] = { ...this.applications[index], ...applicationData }
-    return { ...this.applications[index] }
+    try {
+      const params = {
+        records: [{
+          Id: id,
+          Name: applicationData.job_title_c || applicationData.Name,
+          job_title_c: applicationData.job_title_c,
+          company_name_c: applicationData.company_name_c,
+          location_c: applicationData.location_c,
+          cover_letter_c: applicationData.cover_letter_c,
+          applied_date_c: applicationData.applied_date_c,
+          status_c: applicationData.status_c,
+          employer_notes_c: applicationData.employer_notes_c,
+          job_id_c: applicationData.job_id_c ? parseInt(applicationData.job_id_c) : undefined,
+          job_seeker_id_c: applicationData.job_seeker_id_c ? parseInt(applicationData.job_seeker_id_c) : undefined
+        }]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.updateRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success)
+        const failed = response.results.filter(r => !r.success)
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} records:`, failed)
+        }
+        return successful.length > 0 ? successful[0].data : null
+      }
+    } catch (error) {
+      console.error("Error updating application:", error?.response?.data?.message || error)
+      return null
+    }
   }
 
   async delete(id) {
-    await this.delay()
-    
-    const index = this.applications.findIndex(a => a.Id === id)
-    if (index === -1) throw new Error("Application not found")
-    
-    this.applications.splice(index, 1)
-    return true
+    try {
+      const params = { 
+        RecordIds: [id] 
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.deleteRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return false
+      }
+      
+      return true
+    } catch (error) {
+      console.error("Error deleting application:", error?.response?.data?.message || error)
+      return false
+    }
   }
 
   async getByJobSeeker(jobSeekerId) {
-    await this.delay()
-    return this.applications
-      .filter(a => a.jobSeekerId === jobSeekerId)
-      .map(a => ({ ...a }))
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "job_title_c"}},
+          {"field": {"Name": "company_name_c"}},
+          {"field": {"Name": "location_c"}},
+          {"field": {"Name": "cover_letter_c"}},
+          {"field": {"Name": "applied_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "employer_notes_c"}},
+          {"field": {"Name": "job_id_c"}},
+          {"field": {"Name": "job_seeker_id_c"}}
+        ],
+        where: [{"FieldName": "job_seeker_id_c", "Operator": "ExactMatch", "Values": [parseInt(jobSeekerId)]}],
+        orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching job seeker applications:", error?.response?.data?.message || error)
+      return []
+    }
   }
 
   async getByJob(jobId) {
-    await this.delay()
-    return this.applications
-      .filter(a => a.jobId === jobId)
-      .map(a => ({ ...a }))
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "job_title_c"}},
+          {"field": {"Name": "company_name_c"}},
+          {"field": {"Name": "location_c"}},
+          {"field": {"Name": "cover_letter_c"}},
+          {"field": {"Name": "applied_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "employer_notes_c"}},
+          {"field": {"Name": "job_id_c"}},
+          {"field": {"Name": "job_seeker_id_c"}}
+        ],
+        where: [{"FieldName": "job_id_c", "Operator": "ExactMatch", "Values": [parseInt(jobId)]}],
+        orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching job applications:", error?.response?.data?.message || error)
+      return []
+    }
   }
 
   async getByStatus(status) {
-    await this.delay()
-    return this.applications
-      .filter(a => a.status === status)
-      .map(a => ({ ...a }))
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "job_title_c"}},
+          {"field": {"Name": "company_name_c"}},
+          {"field": {"Name": "location_c"}},
+          {"field": {"Name": "cover_letter_c"}},
+          {"field": {"Name": "applied_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "employer_notes_c"}},
+          {"field": {"Name": "job_id_c"}},
+          {"field": {"Name": "job_seeker_id_c"}}
+        ],
+        where: [{"FieldName": "status_c", "Operator": "ExactMatch", "Values": [status]}],
+        orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}]
+      }
+      
+      const apperClient = this.getApperClient()
+      const response = await apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching applications by status:", error?.response?.data?.message || error)
+      return []
+    }
   }
 }
 

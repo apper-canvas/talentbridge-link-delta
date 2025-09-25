@@ -105,8 +105,8 @@ const Header = ({ className, ...props }) => {
                     <ApperIcon name="User" size={16} className="text-white" />
                   </div>
                   <div className="text-sm">
-                    <p className="font-medium text-gray-900">{currentUser.email}</p>
-                    <p className="text-gray-500 capitalize">{currentUser.role}</p>
+<p className="font-medium text-gray-900">{currentUser.email_c || currentUser.email}</p>
+                    <p className="text-gray-500 capitalize">{currentUser.role_c || currentUser.role}</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -145,7 +145,7 @@ const Header = ({ className, ...props }) => {
                   setIsMobileMenuOpen(false)
                 }}
                 className={cn(
-                  "flex items-center gap-3 w-full px-3 py-3 rounded-md text-left transition-colors",
+"flex items-center gap-3 w-full px-3 py-3 rounded-md text-left transition-colors",
                   location.pathname === item.path
                     ? "text-primary bg-primary/10"
                     : "text-gray-600 hover:text-primary hover:bg-primary/5"
@@ -162,8 +162,8 @@ const Header = ({ className, ...props }) => {
                   <ApperIcon name="User" size={16} className="text-white" />
                 </div>
                 <div className="text-sm">
-                  <p className="font-medium text-gray-900">{currentUser.email}</p>
-                  <p className="text-gray-500 capitalize">{currentUser.role}</p>
+                  <p className="font-medium text-gray-900">{currentUser.email_c || currentUser.email}</p>
+                  <p className="text-gray-500 capitalize">{currentUser.role_c || currentUser.role}</p>
                 </div>
               </div>
               <Button 
